@@ -2,7 +2,7 @@ name: Deploy HTML to EC2
 
 on:
   push:
-    branches: [ main ]  # Change to your branch if needed
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -12,14 +12,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Deploy to EC2
-      env:
-        EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-        EC2_HOST: ${{ secrets.EC2_HOST }}
-        EC2_USER: ${{ secrets.EC2_USER }}
+    - name: Set up SSH key
       run: |
-        echo $EC2_SSH_KEY>>private_key.pem 
-        ssh -i "private_key.pem" $EC2_USER@EC2_HOST
-        git pull origin main
-        echo "Run Successful"
-        exit
+        echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+        chmod 600 private_key.pem
+
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          cd /path/to/your/project
+          git pull origin main
+          echo "Run Successful"
+        EOF
