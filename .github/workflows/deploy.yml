@@ -12,20 +12,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install SSH client
-      run: sudo apt-get install -y openssh-client
-
     - name: Deploy to EC2
       env:
         EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USER: ${{ secrets.EC2_USER }}
       run: |
-        echo "$EC2_SSH_KEY" > private_key.pem
-        chmod 600 private_key.pem
-
-        # Upload all website files
-        scp -o StrictHostKeyChecking=no -i private_key.pem -r * $EC2_USER@$EC2_HOST:/var/www/html/
-
-        # Restart Apache
-        ssh -o StrictHostKeyChecking=no -i private_key.pem $EC2_USER@$EC2_HOST "sudo systemctl restart apache2"
+        git pull origin main
+        echo "Run Successful"
